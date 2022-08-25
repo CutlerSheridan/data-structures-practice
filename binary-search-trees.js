@@ -140,6 +140,25 @@ const Tree = (valArray) => {
     }
     return leftCounter > rightCounter ? leftCounter : rightCounter;
   };
+  const isBalanced = (node = root) => {
+    const longestPath = height();
+    if (!node.left && !node.right) {
+      const shortestPath = depth(node.data);
+      if (longestPath - shortestPath > 1) {
+        return false;
+      }
+      return true;
+    }
+    let leftIsBalanced = true;
+    let rightIsBalanced = true;
+    if (node.left) {
+      leftIsBalanced = isBalanced(node.left);
+    }
+    if (node.right) {
+      rightIsBalanced = isBalanced(node.right);
+    }
+    return !leftIsBalanced || !rightIsBalanced;
+  };
   const buildTree = (arr) => {
     const arrSize = arr.length;
     if (arrSize === 1) {
@@ -179,6 +198,7 @@ const Tree = (valArray) => {
     postorder,
     depth,
     height,
+    isBalanced,
     prettyPrint,
   };
 };
@@ -192,7 +212,20 @@ tree.insert(10);
 tree.insert(4);
 tree.prettyPrint();
 tree.deleteNode(6);
+console.log('delete 6');
 tree.prettyPrint();
+console.log(`isBalanced expect false: ${tree.isBalanced()}`);
+const tree2 = Tree([5, 15, 4, 20, 19]);
+// tree2.prettyPrint();
+console.log(`isBalanced expect true: ${tree2.isBalanced()}`);
+const tree3 = Tree([5, 15, 4, 20, 19, 2, 21]);
+// tree3.prettyPrint();
+console.log(`isBalanced expect true: ${tree3.isBalanced()}`);
+tree3.insert(22);
+tree3.insert(23);
+tree3.insert(24);
+// tree3.prettyPrint();
+console.log(`isBalanced expect false: ${tree3.isBalanced()}`);
 // tree.levelOrder((node) => console.log(node.data * -1));
 // console.log(tree.levelOrder());
 // console.log('find 5 node:');
@@ -204,8 +237,8 @@ tree.prettyPrint();
 // console.log(tree.inorder((node) => console.log(node.data * -1)));
 // console.log(tree.preorder());
 // console.log(tree.postorder());
-console.log(`depth expect 3: ${tree.depth(10)}`);
-console.log(`depth expect 0: ${tree.depth(9)}`);
-console.log(`height expect 4: ${tree.height(9)}`);
-console.log(`height expect 4: ${tree.height()}`);
-console.log(`height expect 2: ${tree.height(15)}`);
+// console.log(`depth expect 3: ${tree.depth(10)}`);
+// console.log(`depth expect 0: ${tree.depth(9)}`);
+// console.log(`height expect 4: ${tree.height(9)}`);
+// console.log(`height expect 4: ${tree.height()}`);
+// console.log(`height expect 2: ${tree.height(15)}`);
