@@ -215,20 +215,48 @@ const Node = (data = null, left = null, right = null) => {
   return { data, left, right };
 };
 
-const tree = Tree([5, 6, 2, 9, 1, 3, 15, 17, 19, 14]);
-tree.insert(10);
-tree.insert(4);
+const createRandomArray = (size) => {
+  const arr = [];
+  for (let i = 0; i < size; i++) {
+    let newNum;
+    do {
+      newNum = Math.floor(Math.random() * 100);
+    } while (arr.includes(newNum));
+    arr.push(newNum);
+  }
+  return arr;
+};
+
+const arr = createRandomArray(25);
+const tree = Tree(arr);
 tree.prettyPrint();
-tree.deleteNode(6);
-tree.deleteNode(1);
-console.log('delete 6 and 1');
+console.log(tree.isBalanced());
+console.log(tree.levelOrder(), tree.preorder(), tree.postorder(), tree.inorder());
+tree.insert(125);
+tree.insert(126);
+tree.insert(127);
+tree.insert(128);
+tree.insert(129);
 tree.prettyPrint();
-console.log(`isBalanced expect false: ${tree.isBalanced()}`);
-console.log('rebalance');
+console.log(tree.isBalanced());
 tree.rebalance();
 tree.prettyPrint();
-console.log(`isBalanced expect true: ${tree.isBalanced()}`);
+console.log(tree.isBalanced());
+console.log(tree.levelOrder(), tree.preorder(), tree.postorder(), tree.inorder());
 
+// const tree = Tree([5, 6, 2, 9, 1, 3, 15, 17, 19, 14]);
+// tree.insert(10);
+// tree.insert(4);
+// tree.prettyPrint();
+// tree.deleteNode(6);
+// tree.deleteNode(1);
+// console.log('delete 6 and 1');
+// tree.prettyPrint();
+// console.log(`isBalanced expect false: ${tree.isBalanced()}`);
+// console.log('rebalance');
+// tree.rebalance();
+// tree.prettyPrint();
+// console.log(`isBalanced expect true: ${tree.isBalanced()}`);
 // const tree2 = Tree([5, 15, 4, 20, 19]);
 // tree2.prettyPrint();
 // console.log(`isBalanced expect true: ${tree2.isBalanced()}`);
