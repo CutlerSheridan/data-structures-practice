@@ -113,6 +113,33 @@ const Tree = (valArray) => {
     postorder(func, node.left);
     postorder(func, node.right);
   };
+  const depth = (value, node = root) => {
+    if (!node) {
+      return null;
+    }
+    if (node.data === value) {
+      return 0;
+    }
+    const direction = value < node.data ? 'left' : 'right';
+    if (node[direction]) {
+      return 1 + depth(value, node[direction]);
+    }
+    return null;
+  };
+  const height = (value = null, node = root) => {
+    let leftCounter = 0;
+    let rightCounter = 0;
+    if (node === root && node.data !== value && value !== null) {
+      node = find(value);
+    }
+    if (node.left) {
+      leftCounter = 1 + height(value, node.left);
+    }
+    if (node.right) {
+      rightCounter = 1 + height(value, node.right);
+    }
+    return leftCounter > rightCounter ? leftCounter : rightCounter;
+  };
   const buildTree = (arr) => {
     const arrSize = arr.length;
     if (arrSize === 1) {
@@ -131,7 +158,6 @@ const Tree = (valArray) => {
     }
     return newNode;
   };
-  // i should change this to a merge sort
   const root = buildTree(mergeSort(valArray));
   const prettyPrint = (node = root, prefix = '', isLeft = true) => {
     if (node.right !== null) {
@@ -142,14 +168,26 @@ const Tree = (valArray) => {
       prettyPrint(node.left, `${prefix}${isLeft ? '    ' : '│   '}`, true);
     }
   };
-  return { root, insert, deleteNode, find, levelOrder, inorder, preorder, postorder, prettyPrint };
+  return {
+    root,
+    insert,
+    deleteNode,
+    find,
+    levelOrder,
+    inorder,
+    preorder,
+    postorder,
+    depth,
+    height,
+    prettyPrint,
+  };
 };
 
 const Node = (data = null, left = null, right = null) => {
   return { data, left, right };
 };
 
-const tree = Tree([5, 6, 2, 9, 1, 3, 16, 17, 18, 15]);
+const tree = Tree([5, 6, 2, 9, 1, 3, 15, 17, 19, 14]);
 tree.insert(10);
 tree.insert(4);
 tree.prettyPrint();
@@ -162,7 +200,12 @@ tree.prettyPrint();
 // console.log('find nonexistant node:');
 // console.log(tree.find(2000));
 // console.log([].concat([5, 6]));
-console.log(tree.inorder());
+// console.log(tree.inorder());
 // console.log(tree.inorder((node) => console.log(node.data * -1)));
-console.log(tree.preorder());
-console.log(tree.postorder());
+// console.log(tree.preorder());
+// console.log(tree.postorder());
+console.log(`depth expect 3: ${tree.depth(10)}`);
+console.log(`depth expect 0: ${tree.depth(9)}`);
+console.log(`height expect 4: ${tree.height(9)}`);
+console.log(`height expect 4: ${tree.height()}`);
+console.log(`height expect 2: ${tree.height(15)}`);
