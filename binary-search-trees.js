@@ -127,6 +127,9 @@ const Tree = (valArray) => {
     return null;
   };
   const height = (value = null, node = root) => {
+    if (!node) {
+      return 0;
+    }
     let leftCounter = 0;
     let rightCounter = 0;
     if (node === root && node.data !== value && value !== null) {
@@ -141,12 +144,10 @@ const Tree = (valArray) => {
     return leftCounter > rightCounter ? leftCounter : rightCounter;
   };
   const isBalanced = (node = root) => {
-    const longestPath = height();
+    if (!node) {
+      return true;
+    }
     if (!node.left && !node.right) {
-      const shortestPath = depth(node.data);
-      if (longestPath - shortestPath > 1) {
-        return false;
-      }
       return true;
     }
     let leftIsBalanced = true;
@@ -157,7 +158,13 @@ const Tree = (valArray) => {
     if (node.right) {
       rightIsBalanced = isBalanced(node.right);
     }
-    return !leftIsBalanced || !rightIsBalanced;
+    if (!leftIsBalanced || !rightIsBalanced) {
+      return false;
+    }
+    return 1 >= height(null, node.right) - height(null, node.left);
+  };
+  const rebalance = () => {
+    root = buildTree(inorder());
   };
   const buildTree = (arr) => {
     const arrSize = arr.length;
@@ -177,7 +184,7 @@ const Tree = (valArray) => {
     }
     return newNode;
   };
-  const root = buildTree(mergeSort(valArray));
+  let root = buildTree(mergeSort(valArray));
   const prettyPrint = (node = root, prefix = '', isLeft = true) => {
     if (node.right !== null) {
       prettyPrint(node.right, `${prefix}${isLeft ? '│   ' : '    '}`, false);
@@ -199,6 +206,7 @@ const Tree = (valArray) => {
     depth,
     height,
     isBalanced,
+    rebalance,
     prettyPrint,
   };
 };
@@ -212,20 +220,26 @@ tree.insert(10);
 tree.insert(4);
 tree.prettyPrint();
 tree.deleteNode(6);
-console.log('delete 6');
+tree.deleteNode(1);
+console.log('delete 6 and 1');
 tree.prettyPrint();
 console.log(`isBalanced expect false: ${tree.isBalanced()}`);
-const tree2 = Tree([5, 15, 4, 20, 19]);
+console.log('rebalance');
+tree.rebalance();
+tree.prettyPrint();
+console.log(`isBalanced expect true: ${tree.isBalanced()}`);
+
+// const tree2 = Tree([5, 15, 4, 20, 19]);
 // tree2.prettyPrint();
-console.log(`isBalanced expect true: ${tree2.isBalanced()}`);
-const tree3 = Tree([5, 15, 4, 20, 19, 2, 21]);
+// console.log(`isBalanced expect true: ${tree2.isBalanced()}`);
+// const tree3 = Tree([5, 15, 4, 20, 19, 2, 21]);
 // tree3.prettyPrint();
-console.log(`isBalanced expect true: ${tree3.isBalanced()}`);
-tree3.insert(22);
-tree3.insert(23);
-tree3.insert(24);
+// console.log(`isBalanced expect true: ${tree3.isBalanced()}`);
+// tree3.insert(22);
+// tree3.insert(23);
+// tree3.insert(24);
 // tree3.prettyPrint();
-console.log(`isBalanced expect false: ${tree3.isBalanced()}`);
+// console.log(`isBalanced expect false: ${tree3.isBalanced()}`);
 // tree.levelOrder((node) => console.log(node.data * -1));
 // console.log(tree.levelOrder());
 // console.log('find 5 node:');
