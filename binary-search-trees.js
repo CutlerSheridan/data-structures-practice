@@ -161,7 +161,8 @@ const Tree = (valArray) => {
     if (!leftIsBalanced || !rightIsBalanced) {
       return false;
     }
-    return 1 >= height(null, node.right) - height(null, node.left);
+    const heightDiff = height(null, node.right) - height(null, node.left);
+    return 1 >= heightDiff && -1 <= heightDiff;
   };
   const rebalance = () => {
     root = buildTree(inorder());
@@ -232,11 +233,14 @@ const tree = Tree(arr);
 tree.prettyPrint();
 console.log(tree.isBalanced());
 console.log(tree.levelOrder(), tree.preorder(), tree.postorder(), tree.inorder());
-tree.insert(125);
-tree.insert(126);
-tree.insert(127);
-tree.insert(128);
-tree.insert(129);
+// tree.insert(125);
+// tree.insert(126);
+// tree.insert(127);
+// tree.insert(128);
+// tree.insert(129);
+tree.insert(-1);
+tree.insert(-2);
+tree.insert(-3);
 tree.prettyPrint();
 console.log(tree.isBalanced());
 tree.rebalance();
