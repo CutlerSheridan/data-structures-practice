@@ -1,9 +1,13 @@
-const Gameboard = () => {
+const Gameboard = (gridToCopy = null) => {
   const grid = [];
   for (let i = 0; i < 8; i++) {
     grid.push([]);
     for (let n = 0; n < 8; n++) {
-      grid[i].push([{ isUsed: false }]);
+      if (gridToCopy) {
+        grid[i].push(gridToCopy[i][n]);
+      } else {
+        grid[i].push({ isUsed: false });
+      }
     }
   }
   return grid;
@@ -29,34 +33,76 @@ const Knight = () => {
     }
     return moves;
   };
-  const createPathsTree = (startingCoord, targetCoord, grid = null, counter = 0) => {
+  const createPathsTree = (startingCoord, targetCoord) => {
+    const board = Gameboard();
+    board[startingCoord[0]][startingCoord[1]].isUsed = true;
+    const root = Node(startingCoord, board);
     if (startingCoord[0] === targetCoord[0] && startingCoord[1] === targetCoord[1]) {
-      return Node(startingCoord);
+      return root;
     }
-    const newGrid = Gameboard();
-    if (grid !== null) {
-      for (let i = 0; i < grid.length; i++) {
-        for (let n = 0; n < grid[0].length; n++) {
-          newGrid[i][n].isUsed = grid[i][n].isUsed;
+    const nodesArr = [root];
+    while (nodesArr.length > 0) {
+      const moves = getPossibleMoves(nodesArr[0].coord, nodesArr[0].grid);
+      if (!moves) {
+        nodesArr[0].move0 = null;
+        nodesArr.shift();
+        continue;
+      }
+      for (let i = 0; i < moves.length; i++) {
+        const newGrid = Gameboard(nodesArr[0].grid);
+        newGrid[moves[i][0]][moves[i][1]].isUsed = true;
+        const newNode = Node(moves[i], newGrid);
+        nodesArr[0][`move${i}`] = newNode;
+        if (moves[i][0] === targetCoord[0] && moves[i][1] === targetCoord[1]) {
+          nodesArr[0].move0 = newNode;
+          for (let n = 1; n <= i; n++) {
+            nodesArr[0][`move${n}`] = null;
+          }
+          nodesArr.splice(0);
+          break;
+        }
+        nodesArr.push(newNode);
+      }
+      nodesArr.shift();
+    }
+    return root;
+  };
+  const findShortestPath = (node, targetCoord, shortestPath = null, currentPath = []) => {
+    const newArr = Array.from(currentPath);
+    newArr.push(node.coord);
+    if (node.coord[0] === targetCoord[0] && node.coord[1] === targetCoord[1]) {
+      if (!shortestPath) {
+        shortestPath = Array.from(newArr);
+      } else if (shortestPath.length > newArr.length) {
+        shortestPath.splice();
+        for (let i = 0; i < newArr.length; i++) {
+          shortestPath.push(newArr[i]);
         }
       }
+      return shortestPath;
     }
-    newGrid[startingCoord[0]][startingCoord[1]].isUsed = true;
-    const moves = getPossibleMoves(startingCoord, newGrid);
-    if (moves.length === 0) {
+    if (!node.move0) {
       return null;
     }
-    const newNode = Node(startingCoord);
-    for (let i = 0; i < moves.length; i++) {
-      if (moves[i][0] === targetCoord[0] && moves[i][1] === targetCoord[1]) {
-        newNode.move0 = Node(moves[i]);
-        return newNode;
+    let paths = [];
+    for (let i = 0; i < 8; i++) {
+      if (node[`move${i}`]) {
+        const nextPath = findShortestPath(node[`move${i}`], targetCoord, shortestPath, newArr);
+        if (nextPath) {
+          paths.push(Array.from(nextPath));
+        }
+      } else {
+        break;
       }
     }
-    for (let i = 0; i < moves.length; i++) {
-      newNode[`move${i}`] = createPathsTree(moves[i], targetCoord, newGrid, ++counter);
+    if (paths.length === 0) {
+      return null;
     }
-    return newNode;
+    if (paths.length === 1) {
+      return paths[0];
+    }
+    paths = paths.filter((x) => x != false);
+    return paths.reduce((x, y) => (x.length < y.length ? x : y));
   };
   const _isMoveWithinBounds = (coord, grid) => {
     if (coord[0] >= 0 && coord[1] >= 0 && coord[0] < grid.length && coord[1] < grid[0].length) {
@@ -67,21 +113,14 @@ const Knight = () => {
     return !grid[coord[0]][coord[1]].isUsed;
   };
 
-  return { getPossibleMoves, createPathsTree };
+  return { getPossibleMoves, createPathsTree, findShortestPath };
 };
-const Node = (coord = null, nextMoves = null) => {
-  const obj = { coord };
-  if (!nextMoves) {
-    obj.move0 = null;
-  } else {
-    nextMoves.forEach((m, index) => {
-      obj[`move${index}`] = m;
-    });
-  }
-  return obj;
+const Node = (coord = null, grid = null) => {
+  let move0 = null;
+  return { coord, grid, move0 };
 };
 
-tests = (() => {
+const tests = (() => {
   const test = (text, func, expectedResult, ...params) => {
     const result = func(...params);
     let areEqual;
@@ -124,6 +163,22 @@ tests = (() => {
     }
     return areEqual;
   };
+  const printTree = (nodeArr) => {
+    while (nodeArr.length > 0) {
+      const moves = [];
+      for (let prop in nodeArr[0]) {
+        if (prop === 'coord') {
+          console.log(`\ncoord: ${nodeArr[0].coord}`);
+        } else if (prop !== 'grid' && nodeArr[0][prop]) {
+          moves.push(nodeArr[0][prop].coord);
+          nodeArr.push(nodeArr[0][prop]);
+        }
+      }
+      console.log('moves:');
+      console.log(moves);
+      nodeArr.shift();
+    }
+  };
   let k = Knight();
   let board = Gameboard();
   let exp = [
@@ -133,9 +188,23 @@ tests = (() => {
     [3, 2],
   ];
   test('get possible moves for [1, 1]', k.getPossibleMoves, exp, [1, 1], board);
-  console.log(k.createPathsTree([0, 0], [1, 2]));
-  console.log(k.createPathsTree([0, 0], [3, 3]));
-  // console.log(k.createPathsTree([3, 3], [4, 3]));
+  // console.log(k.createPathsTree([0, 0], [1, 2]));
+  const tree1 = k.createPathsTree([0, 0], [1, 2]);
+  // printTree([tree1]);
+  const tree2 = k.createPathsTree([0, 0], [3, 3]);
+  printTree([tree2]);
+  let path = k.findShortestPath(tree2, [3, 3]);
+  console.log(`\nshortest path from [0, 0] to [3, 3]:`);
+  console.log(path);
+  const tree3 = k.createPathsTree([3, 3], [4, 3]);
+  // printTree([tree3]);
+  path = k.findShortestPath(tree3, [4, 3]);
+  console.log(`\nshortest path from [3, 3] to [4, 3]:`);
+  console.log(path);
+  const tree4 = k.createPathsTree([0, 0], [7, 7]);
+  path = k.findShortestPath(tree4, [7, 7]);
+  console.log(`\nshortest path from [0, 0] to [7, 7]:`);
+  console.log(path);
 
   // const testNode = Node(
   //   [1, 1],
